@@ -38,7 +38,7 @@ namespace LCWProject.API
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "LCWProject.API", Version = "v1" });
             });
 
-            services.AddScoped(typeof(IGenericService<>), typeof(GenericRepository<>));
+            services.AddScoped(typeof(Bussiness.Interfaces.IGenericService<>), typeof(Bussiness.Concrete.GenericRepository<>));
             services.AddScoped<IProductService, ProductService>();
 
             services.AddAutoMapper(typeof(MapProfile));

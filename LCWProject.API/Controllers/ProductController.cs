@@ -14,6 +14,7 @@ namespace LCWProject.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Consumes("application/json")]
     public class ProductController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -28,7 +29,6 @@ namespace LCWProject.API.Controllers
         public async Task<IActionResult> GetAll()
         {
             var blogList = _mapper.Map<List<ProductDto>>(await _productService.GetAllProductAsync());
-
             return Ok(blogList);
         }
         [HttpGet("{id}")]
@@ -37,10 +37,32 @@ namespace LCWProject.API.Controllers
             return Ok(_mapper.Map<ProductDto>(await _productService.FindByIdAsync(id)));
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] AddProductDto blogAddModel)
+        public async Task<IActionResult> Create([FromForm] AddProductDto productDto)
         {
-            await _productService.AddProductAsync(_mapper.Map<Product>(blogAddModel));
-            return Ok();
+            var existProduct = await _productService.GetByNameAsync(_mapper.Map<Product>(productDto));
+            if (existProduct == null)
+            {
+                await _productService.AddProductAsync(_mapper.Map<Product>(productDto));
+                return Created("",productDto);
+            }
+            else
+            {
+                return BadRequest("product is exist");
+            }
+        }
+        [HttpPut]
+        public async Task<IActionResult> Update(int id, [FromForm] ProductDto productDto)
+        {
+            var product = await _productService.FindByIdAsync(id);
+            product.Name = productDto.Name;
+            product.Description = productDto.Description;
+            return Ok(_productService.UpdateProduct(product));
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _productService.RemoveAsync(await _productService.FindByIdAsync(id));
+            return NoContent();
         }
     }
 }

@@ -14,14 +14,14 @@ namespace LCWProject.Bussiness.Concrete
 {
     public class ProductService : GenericRepository<Product>, IProductService
     {
-        private readonly IGenericService<Product> _genericDal;
-        public ProductService(DemoDbContext context, IGenericService<Product> genericDal) : base(context)
+        private readonly Interfaces.IGenericService<Product> _genericDal;
+        public ProductService(DemoDbContext context, Interfaces.IGenericService<Product> genericDal) : base(context)
         {
             _genericDal = genericDal;
         }
         public async Task<List<Product>> GetAllProductAsync()
         {
-            return await _genericDal.GetAllAsync();
+            return await _genericDal.GetAllAsync(m=>m.IsActive&&m.IsDeleted);
         }
 
         public async Task<Product> FindByIdAsync(int id)
@@ -30,6 +30,8 @@ namespace LCWProject.Bussiness.Concrete
         }
         public async Task AddProductAsync(Product product)
         {
+            product.IsActive = true;
+            product.IsDeleted = false;
             await _genericDal.AddAsync(product);
         }
         public async Task RemoveProductById(int id)
@@ -40,6 +42,10 @@ namespace LCWProject.Bussiness.Concrete
         public async Task UpdateProduct(Product product)
         {
             await _genericDal.UpdateAsync(product);
+        }
+        public async Task<Product> GetByNameAsync(Product product)
+        {
+            return await _genericDal.GetAsync(I => I.Name == product.Name);
         }
 
     }
